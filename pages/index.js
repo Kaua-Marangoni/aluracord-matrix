@@ -1,43 +1,7 @@
 import { Box, Button, Text, TextField, Image } from '@skynexui/components';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from "next/router"
 import appConfig from "../config.json"
-
-function GlobalStyle() {
-  return (
-    <style global jsx>{`
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        list-style: none;
-      }
-
-      body {
-        font-family: sans-serif;
-      }
-
-      body {
-        font-family: 'Open Sans', sans-serif;
-      }
-
-      /* App fit Height */ 
-      html, body, #__next {
-        min-height: 100vh;
-        display: flex;
-        flex: 1;
-      }
-
-      #__next {
-        flex: 1;
-      }
-
-      #__next > * {
-        flex: 1;
-      }
-
-      /* ./App fit Height */ 
-    `}</style>
-  )
-}
 
 function Title(props) {
   const Tag = props.tag || "h1"
@@ -57,24 +21,20 @@ function Title(props) {
   )
 }
 
-// function HomePage() {
-//   return (
-//     <div>
-//       <GlobalStyle />
-//       <Title tag="h2">Boas vindas de volta!</Title>
-//       <h2>Aluracord - Alura Matrix</h2>
-//     </div>
-//   )
-// }
-
-// export default HomePage
-
 export default function InitialPage() {
-  const username = 'kaua-marangoni';
+  const [username, setUserName] = useState("kaua-marangoni")
+  const [nameUser, setNameUser] = useState("")
+  const router = useRouter()
+
+  useEffect(() => {
+    fetch(`https://api.github.com/users/${username}`)
+      .then(response => response.json())
+      .then(data => setNameUser(data.name))
+  }, [username]);
+
 
   return (
     <>
-      <GlobalStyle />
       <Box
         styleSheet={{
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -101,6 +61,11 @@ export default function InitialPage() {
           {/* Formulário */}
           <Box
             as="form"
+            onSubmit={async (event) => {
+              event.preventDefault()
+              router.push("/chat")
+              await sessionStorage.setItem("username:aluracord", username)
+            }}
             styleSheet={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
               width: { xs: '100%', sm: '50%' }, textAlign: 'center', marginBottom: '32px',
@@ -112,6 +77,12 @@ export default function InitialPage() {
             </Text>
 
             <TextField
+              value={username}
+              minLength="2"
+              onChange={(event) => {
+                const value = event.target.value
+                setUserName(value)
+              }}
               fullWidth
               textFieldColors={{
                 neutral: {
@@ -169,7 +140,7 @@ export default function InitialPage() {
                 borderRadius: '1000px'
               }}
             >
-              {username}
+              {nameUser || username}
             </Text>
           </Box>
           {/* Photo Area */}
