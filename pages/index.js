@@ -63,8 +63,8 @@ export default function InitialPage() {
             as="form"
             onSubmit={async (event) => {
               event.preventDefault()
-              router.push("/chat")
-              await sessionStorage.setItem("username:aluracord", username)
+              router.push(`/chat?username=${username}`)
+              // await sessionStorage.setItem("username:aluracord", username)
             }}
             styleSheet={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',

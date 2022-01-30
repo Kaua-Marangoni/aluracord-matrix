@@ -1,14 +1,29 @@
 import { Box, Text, TextField, Image, Button } from '@skynexui/components';
 import React, { useState, useEffect } from 'react';
 import appConfig from '../config.json';
+import { useRouter } from "next/router"
 import { createClient } from '@supabase/supabase-js'
 import ClockLoader from "react-spinners/ClockLoader";
+import { Popover, Typography } from '@mui/material';
+
+import { ButtonSendSticker } from "../src/components/ButtonSendSticker"
 
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzI4ODg0NywiZXhwIjoxOTU4ODY0ODQ3fQ.BO0D6is1lMBl-N78h0aNzTHm6vaVKAoP1Jz66Ll1HMI"
 const SUPABASE_URL = "https://afrsnjmuatymzfmwgnak.supabase.co"
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
+function fetchMessagesInRealTime(addMessage) {
+  return supabaseClient
+    .from("messages")
+    .on("INSERT", (responseLive) => {
+      addMessage(responseLive.new)
+    })
+    .subscribe()
+}
+
 export default function ChatPage() {
+  const router = useRouter()
+  const userLogin = router.query.username
   const [message, setMessage] = useState();
   const [listOfMessages, setListOfMessages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,6 +37,12 @@ export default function ChatPage() {
         .then(({ data }) => {
           setListOfMessages(data)
         })
+      
+        fetchMessagesInRealTime((newMessage) => {
+          setListOfMessages((actualValue) => {
+            return [newMessage, ...actualValue]
+          })
+        })
     }
 
     fetchMessages()
@@ -33,7 +54,8 @@ export default function ChatPage() {
       setLoading(true)
       const message = {
         // id: listOfMessages.length + 1,
-        from: await sessionStorage.getItem("username:aluracord"),
+        from: userLogin,
+        // from: await sessionStorage.getItem("username:aluracord"),
         textMessage: newMessage,
       }
 
@@ -42,8 +64,7 @@ export default function ChatPage() {
         .insert([
           message
         ])
-        .then(({ data }) => {
-          setListOfMessages([data[0], ...listOfMessages])
+        .then(({}) => {
         })
 
       setLoading(false)
@@ -144,6 +165,10 @@ export default function ChatPage() {
                 color: appConfig.theme.colors.neutrals[200],
               }}
             />
+
+            <ButtonSendSticker onStickerClick={(sticker) => {
+              handleNewMessage(`:sticker:${sticker}`)
+            }} />
           </Box>
         </Box>
       </Box>
@@ -189,6 +214,25 @@ function Header() {
 }
 
 function MessageList(props) {
+  // const [username] = useState()
+  // const [nameUser, setNameUser] = useState("")
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const handlePopoverOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handlePopoverClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
+
+  // const data = fetch(`https://api.github.com/users/${props.messages.from}`)
+  //   .then(response => response.json())
+  //   // .then(data => setNameUser(data.name))
+  //   console.log(data)
+
   return (
     <Box
       tag="ul"
@@ -203,6 +247,10 @@ function MessageList(props) {
     >
 
       {props.messages.map((message) => {
+
+        // fetch(`https://api.github.com/users/${message.from}`)
+        //   .then(response => response.json())
+
         return (
           <Text
             key={message.id}
@@ -231,6 +279,11 @@ function MessageList(props) {
                 justifyContent: 'space-between'
               }}>
                 <Image
+                  aria-owns={open ? 'mouse-over-popover' : undefined}
+                  aria-haspopup="true"
+                  // onMouseEnter={handlePopoverOpen}
+                  // onMouseLeave={handlePopoverClose}
+
                   styleSheet={{
                     width: '20px',
                     height: '20px',
@@ -240,6 +293,39 @@ function MessageList(props) {
                   }}
                   src={`https://github.com/${message.from}.png`}
                 />
+
+                <Popover
+                  id="mouse-over-popover"
+                  sx={{
+                    pointerEvents: 'none',
+                  }}
+                  open={open}
+                  anchorEl={anchorEl}
+                  anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'left',
+                  }}
+                  transformOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'left',
+                  }}
+                  onClose={handlePopoverClose}
+                  disableRestoreFocus
+                >
+                  <Typography sx={{ p: 1 }}>
+                    <Image
+                      styleSheet={{
+                        width: '100px',
+                        height: '100px',
+                        borderRadius: '50%',
+                        // display: 'inline-block',
+                      }}
+                      src={`https://github.com/${message.from}.png`}
+                    />
+
+                  </Typography>
+                </Popover>
+
                 <Text tag="strong">
                   {message.from}
                 </Text>
@@ -267,7 +353,18 @@ function MessageList(props) {
                 Deletar
               </Text>
             </Box>
-            {message.textMessage}
+
+            {message.textMessage.startsWith(":sticker:")
+              ? (
+                <Image src={message.textMessage.replace(":sticker:", "")} styleSheet={{
+                  width: "150px",
+                  borderRadius: "3px"
+                }}
+                />
+              )
+              : (
+                message.textMessage
+              )}
           </Text>
         )
       })}
