@@ -5,6 +5,7 @@ import { useRouter } from "next/router"
 import { createClient } from '@supabase/supabase-js'
 import ClockLoader from "react-spinners/ClockLoader";
 import { Popover, Typography } from '@mui/material';
+import format from 'date-fns/format';
 
 import { ButtonSendSticker } from "../src/components/ButtonSendSticker"
 
@@ -37,12 +38,12 @@ export default function ChatPage() {
         .then(({ data }) => {
           setListOfMessages(data)
         })
-      
-        fetchMessagesInRealTime((newMessage) => {
-          setListOfMessages((actualValue) => {
-            return [newMessage, ...actualValue]
-          })
+
+      fetchMessagesInRealTime((newMessage) => {
+        setListOfMessages((actualValue) => {
+          return [newMessage, ...actualValue]
         })
+      })
     }
 
     fetchMessages()
@@ -50,7 +51,6 @@ export default function ChatPage() {
   }, []);
 
   async function handleNewMessage(newMessage) {
-    if (newMessage !== "") {
       setLoading(true)
       const message = {
         // id: listOfMessages.length + 1,
@@ -64,14 +64,11 @@ export default function ChatPage() {
         .insert([
           message
         ])
-        .then(({}) => {
+        .then(({ }) => {
         })
 
-      setLoading(false)
       setMessage("")
-    } else {
-      alert("Escreve ai tio")
-    }
+      setLoading(false)
   }
 
   async function deleteMessage(messageId) {
@@ -217,6 +214,8 @@ function MessageList(props) {
   // const [username] = useState()
   // const [nameUser, setNameUser] = useState("")
   const [anchorEl, setAnchorEl] = useState(null);
+  const router = useRouter()
+  const userLogin = router.query.username
 
   const handlePopoverOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -227,11 +226,6 @@ function MessageList(props) {
   };
 
   const open = Boolean(anchorEl);
-
-  // const data = fetch(`https://api.github.com/users/${props.messages.from}`)
-  //   .then(response => response.json())
-  //   // .then(data => setNameUser(data.name))
-  //   console.log(data)
 
   return (
     <Box
@@ -247,19 +241,18 @@ function MessageList(props) {
     >
 
       {props.messages.map((message) => {
-
-        // fetch(`https://api.github.com/users/${message.from}`)
-        //   .then(response => response.json())
+        const dateFormatted = format(new Date(message.created_at), `dd MMM. yyyy - HH:mm`)
 
         return (
           <Text
             key={message.id}
             tag="li"
             styleSheet={{
-              borderRadius: '5px',
               padding: '6px',
               marginBottom: '12px',
+              borderBottom: `1px solid ${appConfig.theme.colors.neutrals[400]}`,
               hover: {
+                borderRadius: "5px",
                 backgroundColor: appConfig.theme.colors.neutrals[700],
               }
             }}
@@ -313,12 +306,12 @@ function MessageList(props) {
                   disableRestoreFocus
                 >
                   <Typography sx={{ p: 1 }}>
+
                     <Image
                       styleSheet={{
                         width: '100px',
                         height: '100px',
                         borderRadius: '50%',
-                        // display: 'inline-block',
                       }}
                       src={`https://github.com/${message.from}.png`}
                     />
@@ -337,21 +330,23 @@ function MessageList(props) {
                   }}
                   tag="span"
                 >
-                  {(new Date().toLocaleDateString("pt-BR"))}
+                  {dateFormatted}
                 </Text>
               </Box>
 
-              <Text styleSheet={{
-                fontSize: '10px',
-                float: 'right',
-                marginLeft: '8px',
-                cursor: 'pointer',
-                color: appConfig.theme.colors.neutrals[300],
-              }}
-                onClick={() => props.deleteMessage(message.id)}
-              >
-                Deletar
-              </Text>
+              {message.from === userLogin
+                && <Text styleSheet={{
+                  fontSize: '10px',
+                  float: 'right',
+                  marginLeft: '8px',
+                  cursor: 'pointer',
+                  color: appConfig.theme.colors.neutrals[300],
+                }}
+                  onClick={() => props.deleteMessage(message.id)}
+                >
+                  Deletar
+                </Text>}
+
             </Box>
 
             {message.textMessage.startsWith(":sticker:")

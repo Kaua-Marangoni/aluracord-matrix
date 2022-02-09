@@ -1,7 +1,10 @@
 import { Box, Button, Text, TextField, Image } from '@skynexui/components';
 import React, { useState, useEffect } from 'react';
+// import { yupResolver } from "@hookform/resolvers/yup"
 import { useRouter } from "next/router"
 import appConfig from "../config.json"
+import { useForm } from "react-hook-form"
+// import * as Yup from "yup"
 
 function Title(props) {
   const Tag = props.tag || "h1"
@@ -22,7 +25,7 @@ function Title(props) {
 }
 
 export default function InitialPage() {
-  const [username, setUserName] = useState("kaua-marangoni")
+  const [username, setUserName] = useState("")
   const [nameUser, setNameUser] = useState("")
   const router = useRouter()
 
@@ -32,6 +35,24 @@ export default function InitialPage() {
       .then(data => setNameUser(data.name))
   }, [username]);
 
+  /* const schema = Yup.object().shape({
+    usernamee: Yup.string().required("O username é obrigatório")
+  })
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors }
+  } = useForm({
+    resolver: yupResolver(schema)
+  })
+
+  const onSubmit = (clientData) => {
+    // clientData.preventDefault()
+    // console.log(clientData)
+    console.log("aa")
+    router.push(`/chat?username=${username}`)
+  } */
 
   return (
     <>
@@ -61,10 +82,11 @@ export default function InitialPage() {
           {/* Formulário */}
           <Box
             as="form"
+            /* noValidate onSubmit={handleSubmit(onSubmit)} */
             onSubmit={async (event) => {
               event.preventDefault()
               router.push(`/chat?username=${username}`)
-              // await sessionStorage.setItem("username:aluracord", username)
+              await sessionStorage.setItem("username:aluracord", username)
             }}
             styleSheet={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -78,6 +100,8 @@ export default function InitialPage() {
 
             <TextField
               value={username}
+              // {...register("usernamee")}
+              placeholder="username"
               minLength="2"
               onChange={(event) => {
                 const value = event.target.value
@@ -94,7 +118,7 @@ export default function InitialPage() {
               }}
             />
             <Button
-              type='submit'
+              type="submit"
               label='Entrar'
               fullWidth
               buttonColors={{
@@ -129,7 +153,7 @@ export default function InitialPage() {
                 borderRadius: '50%',
                 marginBottom: '16px',
               }}
-              src={`https://github.com/${username}.png`}
+              src={username ? `https://github.com/${username}.png` : "https://img.r7.com/images/2017/12/12/9f2ztvznh6_4qeqird1bt_file"}
             />
             <Text
               variant="body4"
@@ -140,7 +164,7 @@ export default function InitialPage() {
                 borderRadius: '1000px'
               }}
             >
-              {nameUser || username}
+              {nameUser || username || "Anônimo"}
             </Text>
           </Box>
           {/* Photo Area */}
