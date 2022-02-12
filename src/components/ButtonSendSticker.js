@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Button, Text, Image } from '@skynexui/components';
 import appConfig from '../../config.json';
+import ImageSend from "../assets/send.svg"
 
 export function ButtonSendSticker(props) {
   const [isOpen, setOpenState] = useState('');
@@ -24,10 +25,6 @@ export function ButtonSendSticker(props) {
           alignItems: 'center',
           justifyContent: 'center',
           backgroundColor: appConfig.theme.colors.neutrals[300],
-          filter: isOpen ? 'grayscale(0)' : 'grayscale(1)',
-          hover: {
-            filter: 'grayscale(0)',
-          }
         }}
         label="😋"
         onClick={() => setOpenState(!isOpen)}
@@ -74,7 +71,6 @@ export function ButtonSendSticker(props) {
             {appConfig.stickers.map((sticker) => (
               <Text
                 onClick={() => {
-                  // console.log('[DENTRO DO COMPONENTE] Clicou no sticker:', sticker);
                   if (Boolean(props.onStickerClick)) {
                     props.onStickerClick(sticker);
                   }
@@ -98,6 +94,41 @@ export function ButtonSendSticker(props) {
           </Box>
         </Box>
       )}
+    </Box>
+  )
+}
+
+export const ButtonSendMessage = ({ handleNewMessage, message }) => {
+  return (
+    <Box
+      styleSheet={{
+        position: 'relative',
+      }}
+    >
+      <Button
+        styleSheet={{
+          borderRadius: '50%',
+          padding: '0 3px 0 0',
+          minWidth: '50px',
+          minHeight: '50px',
+          fontSize: '20px',
+          marginBottom: '8px',
+          marginRight: '8px',
+          lineHeight: '0',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: appConfig.theme.colors.neutrals[300]
+        }}
+        label={<Image
+          styleSheet={{
+            width: "20px",
+          }}
+          src="https://cdn-icons-png.flaticon.com/512/876/876777.png"
+        />}
+
+        onClick={() => handleNewMessage(message)}
+      />
     </Box>
   )
 }

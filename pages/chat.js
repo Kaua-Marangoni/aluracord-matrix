@@ -7,7 +7,7 @@ import ClockLoader from "react-spinners/ClockLoader";
 import { Popover, Typography } from '@mui/material';
 import format from 'date-fns/format';
 
-import { ButtonSendSticker } from "../src/components/ButtonSendSticker"
+import { ButtonSendSticker, ButtonSendMessage } from "../src/components/ButtonSendSticker"
 
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzI4ODg0NywiZXhwIjoxOTU4ODY0ODQ3fQ.BO0D6is1lMBl-N78h0aNzTHm6vaVKAoP1Jz66Ll1HMI"
 const SUPABASE_URL = "https://afrsnjmuatymzfmwgnak.supabase.co"
@@ -149,7 +149,7 @@ export default function ChatPage() {
                 }
               }}
 
-              placeholder="Insira sua mensagem aqui..."
+              placeholder="Insira sua mensagem..."
               type="textarea"
               styleSheet={{
                 width: '100%',
@@ -162,6 +162,8 @@ export default function ChatPage() {
                 color: appConfig.theme.colors.neutrals[200],
               }}
             />
+
+            <ButtonSendMessage message={message} handleNewMessage={handleNewMessage} />
 
             <ButtonSendSticker onStickerClick={(sticker) => {
               handleNewMessage(`:sticker:${sticker}`)
